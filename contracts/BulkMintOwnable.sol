@@ -3,8 +3,9 @@ pragma solidity ^0.8.0;
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
 
-contract PolygonBulkMintItem is ERC721, ERC721URIStorage {
+contract PolygonBulkMintItem is ERC721, ERC721URIStorage, Ownable {
     using Counters for Counters.Counter;
     using Strings for uint256;
     Counters.Counter private _tokenIds;
@@ -13,14 +14,15 @@ contract PolygonBulkMintItem is ERC721, ERC721URIStorage {
 
     constructor() ERC721("PolygonBulkMintItem", "MuscleHustle") {}
 
-    function bulkMint(address[] memory _toList, uint256[] memory _tokenIdList) public  {
-        require(_toList.length == _tokenIdList.length, "input length must be same");
-        for (uint256 i = 0; i < _tokenIdList.length; i++) {
-            _safeMint(_toList[i], _tokenIdList[i]);
+    function bulkMint(address[] memory _toList) public onlyOwner  {
+        for (uint256 i = 0; i < _toList.length; i++) {
+            _tokenIds.increment();
+            uint256 newItemId = _tokenIds.current();
+            _safeMint(_toList[i], newItemId);
         }
     }
 
-    function _burn(uint256 tokenId) internal override(ERC721, ERC721URIStorage) {
+    function _burn(uint256 tokenId) internal override(ERC721, ERC721URIStorage) onlyOwner {
       super._burn(tokenId);
     }
 
